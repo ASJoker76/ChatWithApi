@@ -6,9 +6,13 @@
         <entry key="..\:/Users/ASUS/.gradle/caches/transforms-3/773bbbb3176eb751cb391badb9495865/transformed/jetified-library-1.6.2/res/drawable/gray_button_background.xml" value="0.1175925925925926" />
         <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/drawable-v24/my_balloon_shape.xml" value="0.2203125" />
         <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/drawable-v24/other_balloon_shape.xml" value="0.1175925925925926" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/drawable/background.xml" value="0.1527777777777778" />
         <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_chat.xml" value="0.18" />
-        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_main.xml" value="0.19010416666666666" />
-        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_register.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_chat_v2.xml" value="0.19010416666666666" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_login.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_main.xml" value="0.25" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/activity_register.xml" value="0.22" />
+        <entry key="..\:/Users/ASUS/Documents/kantor/chat_with_api/app/src/main/res/layout/list_kontak.xml" value="0.20416666666666666" />
       </map>
     </option>
   </component>

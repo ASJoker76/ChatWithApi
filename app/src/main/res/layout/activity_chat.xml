@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         app:balloonMargins="20dp"
         app:thatBalloonBackground="@drawable/other_balloon_shape"
-        app:thatBalloonTextColor="@android:color/white"
+        app:thatBalloonTextColor="@android:color/black"
         app:thisBalloonBackground="@drawable/my_balloon_shape"
         app:thisBalloonTextColor="@android:color/white"
         />

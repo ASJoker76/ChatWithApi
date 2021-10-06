@@ -2,6 +2,9 @@ package chat.with.api;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 //import chat.with.api.interfaces.OnAskToLoadMoreCallback;
@@ -31,13 +34,16 @@ public class ChatActivity extends AppCompatActivity {
 
     private static final int MESSAGE_COUNT = 5;
     private MessagesWindow messagesWindow;
-    //private MessagesWindow mMessagesWindow;
-    //List<Message> mMessages;
+    String username_penerima,username_pengirim;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        SharedPreferences prefs = getBaseContext().getSharedPreferences("login", Context.MODE_PRIVATE);
+        username_pengirim = prefs.getString("user","");
+        username_penerima = getIntent().getStringExtra("username_penerima");
 
         messagesWindow = (MessagesWindow) findViewById(R.id.customized_messages_window);
         final EditText message = messagesWindow.getWritingMessageView().findViewById(R.id.message_box_text_field);
@@ -69,7 +75,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 //messagesWindow.sendMessage(message.getText().toString());
-                kirimpesan(message.getText().toString(),"agus","12:00","reza");
+                kirimpesan(message.getText().toString(),username_pengirim,"12:00",username_penerima);
 //code python instant
                 //messagesWindow.receiveMessage(message.getText().toString());
                 //messagesWindow.setTimestampMode(MessagesWindow.ALWAYS_AFTER_BALLOON);
@@ -123,7 +129,7 @@ public class ChatActivity extends AppCompatActivity {
         pDialog.setCancelable(false);
         pDialog.show();
 
-        Call<ResChat> callLupaPassword = API.service().chatRequest();
+        Call<ResChat> callLupaPassword = API.service().chatByFilterRequest(username_penerima,username_pengirim);
         callLupaPassword.enqueue(new Callback<ResChat>() {
             @Override
             public void onResponse(Call<ResChat> call, Response<ResChat> response) {
@@ -131,13 +137,15 @@ public class ChatActivity extends AppCompatActivity {
                 if (response.code() == 200) {
                     pDialog.dismissWithAnimation();
                     ResChat resChat = response.body();
-                    for(int i=0;i<resChat.getDataChat().size();i++){
-                        ResDetailChat resDetailChat = resChat.getDataChat().get(i);
-                        if(resDetailChat.getUsr_pengirim().equals("agus")||resDetailChat.getUsr_penerima().equals("reza")){
-                            messagesWindow.sendMessage(resDetailChat.getChat());
-                        }
-                        else if (resDetailChat.getUsr_pengirim().equals("reza")||resDetailChat.getUsr_penerima().equals("agus")){
-                            messagesWindow.receiveMessage(resDetailChat.getChat());
+                    if(resChat.getKode()==200){
+                        for(int i=0;i<resChat.getDataChat().size();i++){
+                            ResDetailChat resDetailChat = resChat.getDataChat().get(i);
+                            if(resDetailChat.getUsr_pengirim().equals(username_pengirim)||resDetailChat.getUsr_penerima().equals(username_penerima)){
+                                messagesWindow.sendMessage(resDetailChat.getChat());
+                            }
+                            else if (resDetailChat.getUsr_pengirim().equals(username_penerima)||resDetailChat.getUsr_penerima().equals(username_pengirim)){
+                                messagesWindow.receiveMessage(resDetailChat.getChat());
+                            }
                         }
                     }
                 }
@@ -168,5 +176,12 @@ public class ChatActivity extends AppCompatActivity {
             messages.add(message);
         }
         return messages;
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(ChatActivity.this, MainActivity.class);
+        finish();
+        startActivity(intent);
     }
 }

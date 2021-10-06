@@ -22,7 +22,8 @@ import retrofit2.Response;
 public class RegisterActivity extends AppCompatActivity {
 
     EditText txt_username,txt_password,txt_nama_lengkap;
-    MaterialButton btn_register;
+    MaterialButton btn_register,btn_login;
+    String username,password;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,47 +32,60 @@ public class RegisterActivity extends AppCompatActivity {
 
         txt_username = findViewById(R.id.txt_username);
         txt_password = findViewById(R.id.txt_password);
-        txt_nama_lengkap = findViewById(R.id.txt_nama_lengkap);
 
         btn_register = findViewById(R.id.btn_register);
         btn_register.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //register(txt_username.getText().toString(),txt_password.getText().toString(),txt_nama_lengkap.getText().toString());
+                username = txt_username.getText().toString();
+                password = txt_password.getText().toString();
+                register(username,password);
+                //pindah();
+            }
+        });
+
+        btn_login = findViewById(R.id.btn_login);
+        btn_login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 pindah();
             }
         });
     }
 
     private void pindah() {
-        Intent intent = new Intent(RegisterActivity.this, ChatActivity.class);
+        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
         finish();
         startActivity(intent);
     }
 
-    private void register(String username,String password,String namalengkap) {
+    private void register(String username,String password) {
+        final SweetAlertDialog pDialog = new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
+        pDialog.setTitleText("Loading ...");
+        pDialog.setCancelable(false);
+        pDialog.show();
 
-//        ReqRegister reqRegister = new ReqRegister();
-//        reqRegister.setUsername(username);
-//        reqRegister.setPassword(password);
-//        reqRegister.setNama_lengkap(nama_lengkap);
-        Call<ResUtama> callRegister = API.service().registerRequest(username,password,namalengkap);
+        Call<ResUtama> callRegister = API.service().registerRequest(username,password);
         callRegister.enqueue(new Callback<ResUtama>() {
             @Override
             public void onResponse(Call<ResUtama> call, Response<ResUtama> response) {
                 Log.d("Log Chat", response.code() + "");
+                ResUtama resResUtama = response.body();
                 if (response.code() == 200) {
+                    pDialog.dismissWithAnimation();
 
-                    //ResUtama resChat = response.body();
                     //messagesWindow.sendMessage(chat);
                     new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.SUCCESS_TYPE)
-                            .setTitleText(response.code()+ "")
+                            .setTitleText(resResUtama.getMessage()+ "")
                             .show();
+
+                    clear();
                 }
                 else{
-
+                    pDialog.dismissWithAnimation();
                     new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
-                            .setTitleText(response.code()+ "")
+                            .setTitleText(resResUtama.getMessage()+ "")
                             .show();
                 }
             }
@@ -79,10 +93,16 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ResUtama> call, Throwable t) {
                 t.printStackTrace();
+                pDialog.dismissWithAnimation();
                 new SweetAlertDialog(RegisterActivity.this, SweetAlertDialog.ERROR_TYPE)
                         .setTitleText("Ada Kesalahan Sistem")
                         .show();
             }
         });
+    }
+
+    private void clear() {
+        txt_username.setText("");
+        txt_password.setText("");
     }
 }
