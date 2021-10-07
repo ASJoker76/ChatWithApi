@@ -39,10 +39,15 @@ public interface Service {
                                      @Field("waktu_chat") String nama_lengkap,
                                      @Field("usr_penerima") String usr_penerima);
 
+//    @FormUrlEncoded
+//    @POST("get_list_kontak.php")
+//    Call<ResChat> chatByFilterRequest(@Field("usrpenerima") String usrpenerima,
+//                                      @Field("usrpengirim") String usrpengirim);
+
     @FormUrlEncoded
-    @POST("get_list_kontak.php")
-    Call<ResChat> chatByFilterRequest(@Field("usrpenerima") String usrpenerima,
-                              @Field("usrpengirim") String usrpengirim);
+    @POST("filter_nama_get_chat.php")
+    Call<ResChat> ambilpesanbynama(@Field("usr_pengirim") String usr_pengirim,
+                                     @Field("usr_penerima") String usr_penerima);
 
     @GET("get_chat.php")
     Call<ResChat> chatRequest();

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.samsao.messageui.interfaces.OnAskToLoadMoreCallback;
 import com.samsao.messageui.views.MessagesWindow;
@@ -35,7 +36,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final int MESSAGE_COUNT = 5;
     private MessagesWindow messagesWindow;
     String username_penerima,username_pengirim;
-
+    TextView txt_username_penerima;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +49,10 @@ public class ChatActivity extends AppCompatActivity {
         messagesWindow = (MessagesWindow) findViewById(R.id.customized_messages_window);
         final EditText message = messagesWindow.getWritingMessageView().findViewById(R.id.message_box_text_field);
 
-        onload();
+        txt_username_penerima = findViewById(R.id.txt_username_penerima);
+        txt_username_penerima.setText(username_penerima);
+
+        onload(username_pengirim,username_penerima);
 
 //        List<Message> messages = new ArrayList<>();
 //        Message messaged = new Message(":)", Message.THIS_SIDE);
@@ -122,21 +126,22 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void onload() {
+    private void onload(String username_pengirim_,String username_penerima_) {
         final SweetAlertDialog pDialog = new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Loading ...");
         pDialog.setCancelable(false);
         pDialog.show();
 
-        Call<ResChat> callLupaPassword = API.service().chatByFilterRequest(username_penerima,username_pengirim);
-        callLupaPassword.enqueue(new Callback<ResChat>() {
+        Call<ResChat> callChat = API.service().ambilpesanbynama(username_pengirim_,username_penerima_);
+        callChat.enqueue(new Callback<ResChat>() {
             @Override
             public void onResponse(Call<ResChat> call, Response<ResChat> response) {
                 Log.d("Log Chat", response.code() + "");
                 if (response.code() == 200) {
                     pDialog.dismissWithAnimation();
                     ResChat resChat = response.body();
+                    Log.d("isi",resChat.getDataChat()+"");
                     if(resChat.getKode()==200){
                         for(int i=0;i<resChat.getDataChat().size();i++){
                             ResDetailChat resDetailChat = resChat.getDataChat().get(i);
