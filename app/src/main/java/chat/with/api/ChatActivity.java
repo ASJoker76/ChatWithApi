@@ -15,13 +15,14 @@ import android.os.Build;
 import android.os.Bundle;
 //import chat.with.api.interfaces.OnAskToLoadMoreCallback;
 //import chat.with.api.views.MessagesWindow;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 
-import com.google.firebase.messaging.RemoteMessage;
+//import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.Channel;
@@ -34,6 +35,10 @@ import com.pusher.client.connection.ConnectionStateChange;
 import com.samsao.messageui.interfaces.OnAskToLoadMoreCallback;
 import com.samsao.messageui.views.MessagesWindow;
 import com.samsao.messageui.models.Message;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +61,8 @@ public class ChatActivity extends AppCompatActivity {
     String username_penerima,username_pengirim;
     String id_room;
     TextView txt_username_penerima;
+    private NotificationManager mNotificationManager;
+    private NotificationCompat.Builder mBuilder;
     //there can be multiple notifications so it can be used as notification identity
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
@@ -122,7 +129,8 @@ public class ChatActivity extends AppCompatActivity {
         PusherOptions options = new PusherOptions();
         options.setCluster(getString(R.string.cluster));
 
-        Pusher pusher = new Pusher(getString(R.string.key), options);
+        //Pusher pusher = new Pusher(getString(R.string.key), options);
+        Pusher pusher = new Pusher("1503f658e5c89d8da00e", options);
 
         pusher.connect(new ConnectionEventListener() {
             @Override
@@ -155,10 +163,47 @@ public class ChatActivity extends AppCompatActivity {
 
         Channel channel = pusher.subscribe("my-channel");
 
-        channel.bind("my-event", new SubscriptionEventListener() {
+        channel.bind("Chat With Api", new SubscriptionEventListener() {
             @Override
             public void onEvent(PusherEvent event) {
                 Log.i("Pusher", "Received event with data: " + event.toString());
+                //showNotification();
+                //NOTIFICATION
+                String data = event.getData();
+                String nama="";
+                String pesan="";
+                try {
+                    JSONObject jsonObject = new JSONObject(data);
+                    nama= jsonObject.getString("name");
+                    pesan= jsonObject.getString("message");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                mBuilder = new NotificationCompat.Builder(ChatActivity.this);
+                mBuilder.setSmallIcon(R.mipmap.ic_launcher);
+                mBuilder.setContentTitle(event.getData())
+                        .setContentText("Test")
+                        .setAutoCancel(false)
+                        .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+
+                mNotificationManager = (NotificationManager) ChatActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
+                {
+                    int importance = NotificationManager.IMPORTANCE_HIGH;
+                    NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, "NOTIFICATION_CHANNEL_NAME", importance);
+                    notificationChannel.enableLights(true);
+                    notificationChannel.setLightColor(Color.RED);
+                    notificationChannel.enableVibration(true);
+                    notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                    assert mNotificationManager != null;
+                    mBuilder.setChannelId(CHANNEL_ID);
+                    mNotificationManager.createNotificationChannel(notificationChannel);
+                }
+                assert mNotificationManager != null;
+                mNotificationManager.notify(0 /* Request Code */, mBuilder.build());
+                //END NOTIF
             }
         });
     }
