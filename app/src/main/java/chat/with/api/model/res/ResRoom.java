@@ -4,7 +4,7 @@ public class ResRoom {
     private int kode;
     private String message;
     private String status;
-    private int id_room;
+    private String id_room;
 
     public int getKode() {
         return kode;
@@ -30,11 +30,11 @@ public class ResRoom {
         this.status = status;
     }
 
-    public int getId_room() {
+    public String getId_room() {
         return id_room;
     }
 
-    public void setId_room(int id_room) {
+    public void setId_room(String id_room) {
         this.id_room = id_room;
     }
 }

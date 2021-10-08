@@ -46,7 +46,7 @@ public class ChatActivity extends AppCompatActivity {
     private static final int MESSAGE_COUNT = 5;
     private MessagesWindow messagesWindow;
     String username_penerima,username_pengirim;
-    int id_room;
+    String id_room;
     TextView txt_username_penerima;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,7 +154,7 @@ public class ChatActivity extends AppCompatActivity {
                 Log.d("Log Chat", response.code() + "");
                 ResRoom resRoom = response.body();
                 id_room = resRoom.getId_room();
-                onload(id_room,username_pengirim,username_penerima);
+                onload(id_room);
             }
 
             @Override
@@ -168,7 +168,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void kirimpesan(int id_room_,String chat,String pengirim,String waktu,String penerima) {
+    private void kirimpesan(String id_room_,String chat,String pengirim,String waktu,String penerima) {
 //        ReqKirimChat reqKirimChat = new ReqKirimChat();
 //        reqKirimChat.setChat(chat);
 //        reqKirimChat.setUsr_pengirim(pengirim);
@@ -202,14 +202,14 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void onload(int id_room,String username_pengirim_,String username_penerima_) {
+    private void onload(String id_room) {
         final SweetAlertDialog pDialog = new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.PROGRESS_TYPE);
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#A5DC86"));
         pDialog.setTitleText("Loading ...");
         pDialog.setCancelable(false);
         pDialog.show();
 
-        Call<ResChat> callChat = API.service().ambilpesanbynama(id_room,username_pengirim_,username_penerima_);
+        Call<ResChat> callChat = API.service().ambilpesanbynama(id_room);
         callChat.enqueue(new Callback<ResChat>() {
             @Override
             public void onResponse(Call<ResChat> call, Response<ResChat> response) {

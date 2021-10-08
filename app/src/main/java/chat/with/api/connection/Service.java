@@ -36,7 +36,7 @@ public interface Service {
     @FormUrlEncoded
     @POST("post_chat.php")
     Call<ResUtama> kirimPesanRequest(
-            @Field("id_room") int id_room,
+            @Field("id_room") String id_room,
             @Field("chat") String chat,
             @Field("usr_pengirim") String usr_pengirim,
             @Field("waktu_chat") String nama_lengkap,
@@ -48,11 +48,9 @@ public interface Service {
 //                                      @Field("usrpengirim") String usrpengirim);
 
     @FormUrlEncoded
-    @POST("filter_nama_get_chat.php")
+    @POST("post_chat_by_nama.php")
     Call<ResChat> ambilpesanbynama(
-            @Field("id_room") int id_room,
-            @Field("usr_pengirim") String usr_pengirim,
-            @Field("usr_penerima") String usr_penerima);
+            @Field("id_room") String id_room);
 
     @FormUrlEncoded
     @POST("cek_room.php")
