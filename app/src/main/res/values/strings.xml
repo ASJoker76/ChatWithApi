@@ -4,4 +4,5 @@
     <string name="key">1503f658e5c89d8da00e</string>
     <string name="secret">c14208d36e1d8399fba8</string>
     <string name="cluster">ap1</string>
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
 </resources>

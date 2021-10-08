@@ -1,19 +1,27 @@
 package chat.with.api;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 //import chat.with.api.interfaces.OnAskToLoadMoreCallback;
 //import chat.with.api.views.MessagesWindow;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
+import com.google.firebase.messaging.RemoteMessage;
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
 import com.pusher.client.channel.Channel;
@@ -48,6 +56,10 @@ public class ChatActivity extends AppCompatActivity {
     String username_penerima,username_pengirim;
     String id_room;
     TextView txt_username_penerima;
+    //there can be multiple notifications so it can be used as notification identity
+    private static final String CHANNEL_ID = "channel_id01";
+    public static final int NOTIFICATION_ID = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,6 +129,18 @@ public class ChatActivity extends AppCompatActivity {
             public void onConnectionStateChange(ConnectionStateChange change) {
                 Log.i("Pusher", "State changed from " + change.getPreviousState() +
                         " to " + change.getCurrentState());
+//                Channel channel = pusher.subscribe("my-channel");
+//                channel.bind("my-event", new SubscriptionEventListener() {
+//                    @Override
+//                    public void onEvent(PusherEvent event) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onError(String message, Exception e) {
+//
+//                    }
+//                });
             }
 
             @Override
@@ -169,11 +193,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void kirimpesan(String id_room_,String chat,String pengirim,String waktu,String penerima) {
-//        ReqKirimChat reqKirimChat = new ReqKirimChat();
-//        reqKirimChat.setChat(chat);
-//        reqKirimChat.setUsr_pengirim(pengirim);
-//        reqKirimChat.setWaktu_chat(waktu);
-//        reqKirimChat.setUsr_penerima(penerima);
         Call<ResUtama> callKirimChat = API.service().kirimPesanRequest(id_room_,chat,pengirim,waktu,penerima);
         callKirimChat.enqueue(new Callback<ResUtama>() {
             @Override
@@ -183,6 +202,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     //ResUtama resChat = response.body();
                     messagesWindow.sendMessage(chat);
+                    showNotification();
                 }
                 else{
 
@@ -200,6 +220,60 @@ public class ChatActivity extends AppCompatActivity {
                         .show();
             }
         });
+    }
+
+    private void showNotification() {
+
+        createNotificationChannel();
+
+        //inflating the views (custom_normal.xml and custom_expanded.xml)
+        RemoteViews remoteCollapsedViews = new RemoteViews(getPackageName(), R.layout.custom_normal);
+        RemoteViews remoteExpandedViews = new RemoteViews(getPackageName(), R.layout.custom_expanded);
+
+        //start this(MainActivity) on by Tapping notification
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent mainPIntent = PendingIntent.getActivity(this, 0,
+                mainIntent, PendingIntent.FLAG_ONE_SHOT);
+
+        //creating notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
+        //icon
+        builder.setSmallIcon(R.drawable.ic_launcher_foreground);
+        //set priority
+        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        //dismiss on tap
+        builder.setAutoCancel(true);
+        //start intent on notification tap (MainActivity)
+        builder.setContentIntent(mainPIntent);
+        //custom style
+        builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
+        builder.setCustomContentView(remoteCollapsedViews);
+        builder.setCustomBigContentView(remoteExpandedViews);
+
+        //notification manager
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        notificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
+
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            CharSequence name = "My Notification";
+            String description = "My notification description";
+            //importance of your notification
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+
+
+            NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, name, importance);
+            notificationChannel.setDescription(description);
+
+            NotificationManager notificationManager = (NotificationManager)
+                    getSystemService(NOTIFICATION_SERVICE);
+
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
     }
 
     private void onload(String id_room) {
@@ -229,6 +303,7 @@ public class ChatActivity extends AppCompatActivity {
                             }
                         }
                     }
+                    pusher();
                 }
                 else{
                     pDialog.dismissWithAnimation();
@@ -247,16 +322,6 @@ public class ChatActivity extends AppCompatActivity {
                         .show();
             }
         });
-    }
-
-    private List<Message> getMessages(String identification) {
-        List<Message> messages = new ArrayList<>();
-        for (int i = 0; i < MESSAGE_COUNT; i++) {
-            Message message = new Message(identification + "message " + i, i % 3 == 0 ? Message.THIS_SIDE : Message.THAT_SIDE);
-            message.setTime("7:20 pm");
-            messages.add(message);
-        }
-        return messages;
     }
 
     @Override

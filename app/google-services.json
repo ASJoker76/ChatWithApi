@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "644895727734",
+    "project_id": "chatwithapi-df215",
+    "storage_bucket": "chatwithapi-df215.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644895727734:android:937868a0ea1a49440cff57",
+        "android_client_info": {
+          "package_name": "chat.with.api"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644895727734-qvp5890f91fuiipom7bb4uhisnc4bg72.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSWFVv_Q3za3VkKtTQ00I3NKJC9EDH-20"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644895727734-qvp5890f91fuiipom7bb4uhisnc4bg72.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
