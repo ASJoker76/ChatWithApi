@@ -38,6 +38,8 @@ dependencies {
 
     //import chat
     implementation 'com.github.samsao:messageui:1.0.0'
+    //pusher
+    implementation 'com.pusher:pusher-java-client:2.2.6'
 
     //import retrofit
     implementation 'com.squareup.okhttp3:okhttp:3.9.0'

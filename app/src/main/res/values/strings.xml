@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">chat_with_api</string>
+    <string name="app_id">1278493</string>
+    <string name="key">1503f658e5c89d8da00e</string>
+    <string name="secret">c14208d36e1d8399fba8</string>
+    <string name="cluster">ap1</string>
 </resources>
