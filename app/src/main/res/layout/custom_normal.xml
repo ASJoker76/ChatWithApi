@@ -18,13 +18,15 @@
             style="@style/TextAppearance.Compat.Notification.Title"
             android:text="Title of the notification"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"/>
         <TextView
             android:id="@+id/txt_isi_pesan"
             style="@style/TextAppearance.Compat.Notification.Info"
             android:text="Title description of the notitification in collapsed mode. click expand icon to expand it."
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="10dp"/>
     </LinearLayout>
 
 </LinearLayout>
