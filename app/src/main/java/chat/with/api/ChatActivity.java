@@ -247,7 +247,7 @@ public class ChatActivity extends AppCompatActivity {
 
                     //ResUtama resChat = response.body();
                     messagesWindow.sendMessage(chat);
-                    showNotification();
+                    //showNotification();
                 }
                 else{
 
