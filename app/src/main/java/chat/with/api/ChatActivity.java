@@ -281,6 +281,11 @@ public class ChatActivity extends AppCompatActivity {
         PendingIntent mainPIntent = PendingIntent.getActivity(this, 0,
                 mainIntent, PendingIntent.FLAG_ONE_SHOT);
 
+        //Click Like button to start LikeActivity
+        Intent likeIntent = new Intent(this, ChatActivity.class);
+        likeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent likePIntent = PendingIntent.getActivity(this, 0, likeIntent, PendingIntent.FLAG_ONE_SHOT);
+
         //creating notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
         //icon
@@ -295,6 +300,7 @@ public class ChatActivity extends AppCompatActivity {
         builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
         builder.setCustomContentView(remoteCollapsedViews);
         builder.setCustomBigContentView(remoteExpandedViews);
+        builder.addAction(R.drawable.ic_sent, "Kirim", likePIntent);
 
         //notification manager
         NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
@@ -348,7 +354,7 @@ public class ChatActivity extends AppCompatActivity {
                             }
                         }
                     }
-                    pusher();
+                    //pusher();
                 }
                 else{
                     pDialog.dismissWithAnimation();
