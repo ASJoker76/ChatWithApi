@@ -16,6 +16,7 @@ import android.os.Bundle;
 //import chat.with.api.interfaces.OnAskToLoadMoreCallback;
 //import chat.with.api.views.MessagesWindow;
 import android.provider.Settings;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -39,8 +40,11 @@ import com.samsao.messageui.models.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import chat.with.api.connection.API;
 
@@ -110,9 +114,9 @@ public class ChatActivity extends AppCompatActivity {
         messagesWindow.getWritingMessageView().findViewById(R.id.message_box_button).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
                 //messagesWindow.sendMessage(message.getText().toString());
-                kirimpesan(id_room,message.getText().toString(),username_pengirim,"12:00",username_penerima);
+                kirimpesan(id_room,message.getText().toString(),username_pengirim,currentTime,username_penerima);
 //code python instant
                 //messagesWindow.receiveMessage(message.getText().toString());
                 //messagesWindow.setTimestampMode(MessagesWindow.ALWAYS_AFTER_BALLOON);
@@ -231,7 +235,14 @@ public class ChatActivity extends AppCompatActivity {
                 pDialog.dismissWithAnimation();
                 t.printStackTrace();
                 new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.ERROR_TYPE)
-                        .setTitleText("Ada Kesalahan Sistem")
+                        .setTitleText("Tidak Ada Koneksi"+ "")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismissWithAnimation();
+                                cekroom(username_pengirim,username_penerima);
+                            }
+                        })
                         .show();
             }
         });
@@ -246,7 +257,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (response.code() == 200) {
 
                     //ResUtama resChat = response.body();
-                    messagesWindow.sendMessage(chat);
+                    messagesWindow.sendMessage(chat +"\n" + waktu);
                     //showNotification();
                 }
                 else{
@@ -261,7 +272,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onFailure(Call<ResUtama> call, Throwable t) {
                 t.printStackTrace();
                 new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.ERROR_TYPE)
-                        .setTitleText("Ada Kesalahan Sistem")
+                        .setTitleText("Pesan Tidak Terkirim, Periksa Koneksi Internet")
                         .show();
             }
         });
@@ -347,10 +358,10 @@ public class ChatActivity extends AppCompatActivity {
                         for(int i=0;i<resChat.getDataChat().size();i++){
                             ResDetailChat resDetailChat = resChat.getDataChat().get(i);
                             if(resDetailChat.getUsr_pengirim().equals(username_pengirim)||resDetailChat.getUsr_penerima().equals(username_penerima)){
-                                messagesWindow.sendMessage(resDetailChat.getChat());
+                                messagesWindow.sendMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
                             }
                             else if (resDetailChat.getUsr_pengirim().equals(username_penerima)||resDetailChat.getUsr_penerima().equals(username_pengirim)){
-                                messagesWindow.receiveMessage(resDetailChat.getChat());
+                                messagesWindow.receiveMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
                             }
                         }
                     }
@@ -369,7 +380,14 @@ public class ChatActivity extends AppCompatActivity {
                 t.printStackTrace();
                 pDialog.dismissWithAnimation();
                 new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.ERROR_TYPE)
-                        .setTitleText("Ada Kesalahan Sistem")
+                        .setTitleText("Tidak Ada Koneksi"+ "")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismissWithAnimation();
+                                onload(id_room);
+                            }
+                        })
                         .show();
             }
         });

@@ -89,7 +89,14 @@ public class MainActivity extends AppCompatActivity {
                 t.printStackTrace();
                 //progress.setVisibility(View.GONE);
                 new SweetAlertDialog(MainActivity.this, SweetAlertDialog.ERROR_TYPE)
-                        .setTitleText("Ada Kesalahan Sistem")
+                        .setTitleText("Tidak Ada Koneksi"+ "")
+                        .setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismissWithAnimation();
+                                populatelist();
+                            }
+                        })
                         .show();
             }
         });
