@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -42,6 +44,7 @@ public class CPusher extends Application {
     //there can be multiple notifications so it can be used as notification identity
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
+    private Vibrator vibrator;
 
     @Override
     public void onCreate() {
@@ -142,6 +145,13 @@ public class CPusher extends Application {
                 NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(CPusher.this);
                 notificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
 
+                //init Android Vibrator API
+                vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vibrator.vibrate(VibrationEffect.createOneShot(2000, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vibrator.vibrate(2000);
+                }
 //                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
 //                {
 //                    int importance = NotificationManager.IMPORTANCE_HIGH;
