@@ -148,9 +148,9 @@ public class CPusher extends Application {
                 //init Android Vibrator API
                 vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                 if (Build.VERSION.SDK_INT >= 26) {
-                    vibrator.vibrate(VibrationEffect.createOneShot(2000, VibrationEffect.DEFAULT_AMPLITUDE));
+                    vibrator.vibrate(VibrationEffect.createOneShot(1000, VibrationEffect.DEFAULT_AMPLITUDE));
                 } else {
-                    vibrator.vibrate(2000);
+                    vibrator.vibrate(1000);
                 }
 //                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
 //                {
