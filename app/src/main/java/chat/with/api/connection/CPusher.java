@@ -160,7 +160,7 @@ public class CPusher extends Application {
                     /* Set Light */
                     builder.setLights(Color.RED, 500,500);
                     /* Vibrate pattern */
-                    long[] pattern = {500, 500, 500, 500, 500, 500, 500, 500, 500};
+                    //long[] pattern = {500, 500, 500, 500, 500, 500, 500, 500, 500};
                     //builder.setStyle(new NotificationCompat.InboxStyle());
 //                  builder.setContentTitle(data);
 //                  builder.setContentText("Test");
