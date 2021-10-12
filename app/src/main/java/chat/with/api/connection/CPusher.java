@@ -153,7 +153,6 @@ public class CPusher extends Application {
                     builder.setCustomBigContentView(remoteExpandedViews);
 //                builder.setContentTitle(data);
 //                builder.setContentText("Test");
-                    builder.setAutoCancel(false);
                     builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
 
                     //notification manager

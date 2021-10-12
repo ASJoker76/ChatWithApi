@@ -17,6 +17,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chat_with_api"
         tools:replace="android:icon">
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+<!--            android:value="@string/banner_ad_unit_id"/>-->
         <activity
             android:name=".MainActivity"
             android:exported="true" />

@@ -14,6 +14,9 @@ import android.widget.TextView;
 
 /*import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;*/
+//import com.google.android.gms.ads.AdRequest;
+//import com.google.android.gms.ads.AdView;
+//import com.google.android.gms.ads.MobileAds;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
@@ -42,15 +45,19 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    //private AdView mAdView;
+//    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        /*mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);*/
+
+//        MobileAds.initialize(this);
+//
+//        mAdView = findViewById(R.id.adView);
+//        AdRequest adRequest = new AdRequest.Builder().build();
+//        mAdView.loadAd(adRequest);
+
         loaddata();
         populatelist();
         SharedPreferences prefs = getBaseContext().getSharedPreferences("login", Context.MODE_PRIVATE);
