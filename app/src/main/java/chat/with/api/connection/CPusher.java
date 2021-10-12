@@ -1,8 +1,10 @@
 package chat.with.api.connection;
 
+import static android.provider.Settings.System.getUriFor;
 import static chat.with.api.utils.AESEncyption.decrypt;
 
 import android.app.Application;
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -10,6 +12,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -20,6 +24,7 @@ import android.widget.RemoteViews;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 
 import com.pusher.client.Pusher;
 import com.pusher.client.PusherOptions;
@@ -48,6 +53,7 @@ public class CPusher extends Application {
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
     private Vibrator vibrator;
+    public static final String NOTIFICATION_REPLY = "NotificationReply";
     String dec;
 
     @Override
@@ -151,14 +157,39 @@ public class CPusher extends Application {
                     builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
                     builder.setCustomContentView(remoteCollapsedViews);
                     builder.setCustomBigContentView(remoteExpandedViews);
-//                builder.setContentTitle(data);
-//                builder.setContentText("Test");
-                    builder.setAutoCancel(false);
-                    builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
-
+                    /* Set Light */
+                    builder.setLights(Color.RED, 500,500);
+                    /* Vibrate pattern */
+                    long[] pattern = {500, 500, 500, 500, 500, 500, 500, 500, 500};
+                    //builder.setStyle(new NotificationCompat.InboxStyle());
+//                  builder.setContentTitle(data);
+//                  builder.setContentText("Test");
+                    //builder.setAutoCancel(true);
+                    //builder.setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+                    //builder.setDefaults(Notification.DEFAULT_SOUND);
                     //notification manager
                     NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(CPusher.this);
                     notificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
+
+                    Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                    if(alarmSound == null){
+                        alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+                        if(alarmSound == null){
+                            alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                        }
+                    }
+                    builder.setSound(alarmSound);
+                    builder.setDefaults(Notification.DEFAULT_SOUND);
+
+                    RemoteInput remoteInput = new RemoteInput.Builder(NOTIFICATION_REPLY)
+                            .setLabel("Please enter your name")
+                            .build();
+
+                    NotificationCompat.Action action =
+                            new NotificationCompat.Action.Builder(android.R.drawable.ic_delete,
+                                    "Reply Now...", mainPIntent)
+                                    .addRemoteInput(remoteInput)
+                                    .build();
 
                     //init Android Vibrator API
                     vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
