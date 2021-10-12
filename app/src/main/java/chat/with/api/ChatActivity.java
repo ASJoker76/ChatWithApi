@@ -1,5 +1,8 @@
 package chat.with.api;
 
+import static chat.with.api.utils.AESEncyption.decrypt;
+import static chat.with.api.utils.AESEncyption.encrypt;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -40,11 +43,18 @@ import com.samsao.messageui.models.Message;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 
 import chat.with.api.connection.API;
 
@@ -57,6 +67,8 @@ import cn.pedant.SweetAlert.SweetAlertDialog;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+import chat.with.api.utils.AESEncyption;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -115,8 +127,13 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String currentTime = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
-                //messagesWindow.sendMessage(message.getText().toString());
-                kirimpesan(id_room,message.getText().toString(),username_pengirim,currentTime,username_penerima);
+                try {
+                    String enc = encrypt(message.getText().toString());
+                    kirimpesan(id_room,enc,username_pengirim,currentTime,username_penerima,message.getText().toString());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                //kirimpesan(id_room,message.getText().toString(),username_pengirim,currentTime,username_penerima);
 //code python instant
                 //messagesWindow.receiveMessage(message.getText().toString());
                 //messagesWindow.setTimestampMode(MessagesWindow.ALWAYS_AFTER_BALLOON);
@@ -248,7 +265,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    private void kirimpesan(String id_room_,String chat,String pengirim,String waktu,String penerima) {
+    private void kirimpesan(String id_room_,String chat,String pengirim,String waktu,String penerima,String pesan_asli) {
         Call<ResUtama> callKirimChat = API.service().kirimPesanRequest(id_room_,chat,pengirim,waktu,penerima);
         callKirimChat.enqueue(new Callback<ResUtama>() {
             @Override
@@ -257,7 +274,7 @@ public class ChatActivity extends AppCompatActivity {
                 if (response.code() == 200) {
 
                     //ResUtama resChat = response.body();
-                    messagesWindow.sendMessage(chat +"\n" + waktu);
+                    messagesWindow.sendMessage(pesan_asli +"\n" + waktu);
                     //showNotification();
                 }
                 else{
@@ -358,10 +375,22 @@ public class ChatActivity extends AppCompatActivity {
                         for(int i=0;i<resChat.getDataChat().size();i++){
                             ResDetailChat resDetailChat = resChat.getDataChat().get(i);
                             if(resDetailChat.getUsr_pengirim().equals(username_pengirim)||resDetailChat.getUsr_penerima().equals(username_penerima)){
-                                messagesWindow.sendMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
+                                try {
+                                    String dec = decrypt(resDetailChat.getChat());
+                                    messagesWindow.sendMessage(dec+"\n" + resDetailChat.getWaktu_chat());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                //messagesWindow.sendMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
                             }
                             else if (resDetailChat.getUsr_pengirim().equals(username_penerima)||resDetailChat.getUsr_penerima().equals(username_pengirim)){
-                                messagesWindow.receiveMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
+                                try {
+                                    String dec = decrypt(resDetailChat.getChat());
+                                    messagesWindow.receiveMessage(dec+"\n" + resDetailChat.getWaktu_chat());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                //messagesWindow.receiveMessage(resDetailChat.getChat()+"\n" + resDetailChat.getWaktu_chat());
                             }
                         }
                     }
