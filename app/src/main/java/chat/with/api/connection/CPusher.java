@@ -1,5 +1,7 @@
 package chat.with.api.connection;
 
+import static chat.with.api.utils.AESEncyption.decrypt;
+
 import android.app.Application;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -46,6 +48,7 @@ public class CPusher extends Application {
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
     private Vibrator vibrator;
+    String dec;
 
     @Override
     public void onCreate() {
@@ -92,6 +95,11 @@ public class CPusher extends Application {
                     nama_penerima= jsonObject.getString("nama_penerima");
                     nama_pengirim= jsonObject.getString("nama_pengirim");
                     pesan= jsonObject.getString("pesan");
+                    try {
+                        dec = decrypt(pesan);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -106,10 +114,22 @@ public class CPusher extends Application {
                     RemoteViews remoteExpandedViews = new RemoteViews(getPackageName(), R.layout.custom_expanded);
 
                     remoteCollapsedViews.setTextViewText(R.id.txt_judul, nama_pengirim);
-                    remoteCollapsedViews.setTextViewText(R.id.txt_isi_pesan, pesan);
+//                    try {
+//                        String dec = decrypt(pesan);
+//                        remoteCollapsedViews.setTextViewText(R.id.txt_isi_pesan, dec);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+                    remoteCollapsedViews.setTextViewText(R.id.txt_isi_pesan, dec);
 
                     remoteExpandedViews.setTextViewText(R.id.txt_judul, nama_pengirim);
-                    remoteExpandedViews.setTextViewText(R.id.txt_isi_pesan, pesan);
+//                    try {
+//                        String dec = decrypt(pesan);
+//                        remoteExpandedViews.setTextViewText(R.id.txt_isi_pesan, dec);
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                    }
+                    remoteExpandedViews.setTextViewText(R.id.txt_isi_pesan, dec);
                     //start this(MainActivity) on by Tapping notification
                     Intent mainIntent = new Intent(CPusher.this, ChatActivity.class);
                     mainIntent.putExtra("username_penerima", nama_pengirim);
