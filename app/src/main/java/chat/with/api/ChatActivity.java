@@ -1,12 +1,15 @@
 package chat.with.api;
 
+import static chat.with.api.connection.ForeBackground.NOTIFICATION_REPLY;
 import static chat.with.api.utils.AESEncyption.decrypt;
 import static chat.with.api.utils.AESEncyption.encrypt;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.app.RemoteInput;
 
+import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,10 +17,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 //import chat.with.api.interfaces.OnAskToLoadMoreCallback;
 //import chat.with.api.views.MessagesWindow;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.text.format.Time;
 import android.util.Log;
@@ -52,12 +61,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 
 import chat.with.api.connection.API;
 
+import chat.with.api.connection.CPusher;
+import chat.with.api.connection.ForeBackground;
 import chat.with.api.model.req.ReqKirimChat;
 import chat.with.api.model.res.ResChat;
 import chat.with.api.model.res.ResDetailChat;
@@ -72,16 +85,17 @@ import chat.with.api.utils.AESEncyption;
 
 public class ChatActivity extends AppCompatActivity {
 
-    private static final int MESSAGE_COUNT = 5;
     private MessagesWindow messagesWindow;
     String username_penerima,username_pengirim;
     String id_room;
     TextView txt_username_penerima;
-    private NotificationManager mNotificationManager;
-    private NotificationCompat.Builder mBuilder;
-    //there can be multiple notifications so it can be used as notification identity
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
+    private Vibrator vibrator;
+    public static final String NOTIFICATION_REPLY = "NotificationReply";
+    String dec;
+    private Pusher pusher;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,90 +157,85 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-
+        onloadChatnew();
     }
 
-    private void pusher() {
-        PusherOptions options = new PusherOptions();
-        options.setCluster(getString(R.string.cluster));
+    private void onloadChatnew() {
+        Handler handler = new Handler(Looper.getMainLooper());
 
-        //Pusher pusher = new Pusher(getString(R.string.key), options);
-        Pusher pusher = new Pusher("1503f658e5c89d8da00e", options);
-
-        pusher.connect(new ConnectionEventListener() {
+        TimerTask timerTask = new TimerTask() {
             @Override
-            public void onConnectionStateChange(ConnectionStateChange change) {
-                Log.i("Pusher", "State changed from " + change.getPreviousState() +
-                        " to " + change.getCurrentState());
-//                Channel channel = pusher.subscribe("my-channel");
-//                channel.bind("my-event", new SubscriptionEventListener() {
-//                    @Override
-//                    public void onEvent(PusherEvent event) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(String message, Exception e) {
-//
-//                    }
-//                });
+            public void run() {
+                handler.post(() -> {
+                    Log.i("kalo masuk","log timer");
+                    try {
+                        PusherOptions options = new PusherOptions();
+                        options.setCluster(getString(R.string.cluster));
+
+                        //Pusher pusher = new Pusher(getString(R.string.key), options);
+                        pusher = new Pusher("1503f658e5c89d8da00e", options);
+
+                        pusher.connect(new ConnectionEventListener() {
+                            @Override
+                            public void onConnectionStateChange(ConnectionStateChange change) {
+                                Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                                        " to " + change.getCurrentState());
+                            }
+
+                            @Override
+                            public void onError(String message, String code, Exception e) {
+                                Log.i("Pusher", "There was a problem connecting! " +
+                                        "\ncode: " + code +
+                                        "\nmessage: " + message +
+                                        "\nException: " + e
+                                );
+                            }
+                        }, ConnectionState.ALL);
+
+                        Channel channel = pusher.subscribe("my-channel");
+
+                        channel.bind("Chat With Api", new SubscriptionEventListener() {
+                            @Override
+                            public void onEvent(PusherEvent event) {
+                                Log.i("Pusher", "Received event with data: " + event.toString());
+
+//                showNotification();
+                                //NOTIFICATION
+                                String data = event.getData();
+                                String waktu_dapet="";
+                                String nama_pengirim="";
+                                String nama_penerima="";
+                                String pesan="";
+                                try {
+                                    JSONObject jsonObject = new JSONObject(data);
+                                    waktu_dapet = jsonObject.getString("waktu_dapet");
+                                    nama_penerima= jsonObject.getString("nama_penerima");
+                                    nama_pengirim= jsonObject.getString("nama_pengirim");
+                                    pesan= jsonObject.getString("pesan");
+                                    try {
+                                        dec = decrypt(pesan);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                    SharedPreferences prefs = getBaseContext().getSharedPreferences("login", Context.MODE_PRIVATE);
+                                    String usr = prefs.getString("user","");
+                                    if(nama_penerima.equals(usr)){
+                                        setChat(messagesWindow,dec,waktu_dapet);
+                                    }
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                    catch (Exception e){
+
+                    }
+                });
             }
-
-            @Override
-            public void onError(String message, String code, Exception e) {
-                Log.i("Pusher", "There was a problem connecting! " +
-                        "\ncode: " + code +
-                        "\nmessage: " + message +
-                        "\nException: " + e
-                );
-            }
-        }, ConnectionState.ALL);
-
-        Channel channel = pusher.subscribe("my-channel");
-
-        channel.bind("Chat With Api", new SubscriptionEventListener() {
-            @Override
-            public void onEvent(PusherEvent event) {
-                Log.i("Pusher", "Received event with data: " + event.toString());
-                //showNotification();
-                //NOTIFICATION
-                String data = event.getData();
-                String nama="";
-                String pesan="";
-                try {
-                    JSONObject jsonObject = new JSONObject(data);
-                    nama= jsonObject.getString("name");
-                    pesan= jsonObject.getString("message");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                mBuilder = new NotificationCompat.Builder(ChatActivity.this);
-                mBuilder.setSmallIcon(R.mipmap.ic_launcher);
-                mBuilder.setContentTitle(event.getData())
-                        .setContentText("Test")
-                        .setAutoCancel(false)
-                        .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
-
-                mNotificationManager = (NotificationManager) ChatActivity.this.getSystemService(Context.NOTIFICATION_SERVICE);
-
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O)
-                {
-                    int importance = NotificationManager.IMPORTANCE_HIGH;
-                    NotificationChannel notificationChannel = new NotificationChannel(CHANNEL_ID, "NOTIFICATION_CHANNEL_NAME", importance);
-                    notificationChannel.enableLights(true);
-                    notificationChannel.setLightColor(Color.RED);
-                    notificationChannel.enableVibration(true);
-                    notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
-                    assert mNotificationManager != null;
-                    mBuilder.setChannelId(CHANNEL_ID);
-                    mNotificationManager.createNotificationChannel(notificationChannel);
-                }
-                assert mNotificationManager != null;
-                mNotificationManager.notify(0 /* Request Code */, mBuilder.build());
-                //END NOTIF
-            }
-        });
+        };
+        Timer mTimer = new Timer();
+        mTimer.schedule(timerTask, 0,10*10*1000);
     }
 
     private void cekroom(String username_pengirim, String username_penerima) {
@@ -272,9 +281,15 @@ public class ChatActivity extends AppCompatActivity {
             public void onResponse(Call<ResUtama> call, Response<ResUtama> response) {
                 Log.d("Log Chat", response.code() + "");
                 if (response.code() == 200) {
-
-                    //ResUtama resChat = response.body();
-                    messagesWindow.sendMessage(pesan_asli +"\n" + waktu);
+                    ResUtama resChat = response.body();
+                    if(resChat.getKode()==200){
+                        messagesWindow.sendMessage(pesan_asli +"\n" + waktu);
+                    }
+                    else if(resChat.getKode()==204){
+                        new SweetAlertDialog(ChatActivity.this, SweetAlertDialog.ERROR_TYPE)
+                                .setTitleText("Pesan Tidak Terkirim \n Periksa Koneksi Internet Anda")
+                                .show();
+                    }
                     //showNotification();
                 }
                 else{
@@ -427,5 +442,14 @@ public class ChatActivity extends AppCompatActivity {
         Intent intent = new Intent(ChatActivity.this, MainActivity.class);
         finish();
         startActivity(intent);
+    }
+
+    private void setChat(final MessagesWindow messagesWindow,final String value,final String waktu){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                messagesWindow.receiveMessage(value+"\n" + waktu);
+            }
+        });
     }
 }

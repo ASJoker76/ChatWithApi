@@ -45,9 +45,7 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".connection.CPusher"
-            android:enabled="true" />
+        <service android:name=".connection.ForeBackground" />
     </application>
 
 </manifest>

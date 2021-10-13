@@ -29,6 +29,7 @@ import java.util.List;
 import chat.with.api.adapter.KontakDataAdapter;
 import chat.with.api.connection.API;
 import chat.with.api.connection.ForeBackground;
+import chat.with.api.connection.IntentServiceBackground;
 import chat.with.api.model.res.ResDetailChat;
 import chat.with.api.model.res.ResUser;
 import chat.with.api.model.res.ResUserDetail;
@@ -56,11 +57,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        MobileAds.initialize(this);
-//
-//        mAdView = findViewById(R.id.adView);
-//        AdRequest adRequest = new AdRequest.Builder().build();
-//        mAdView.loadAd(adRequest);
+
+        startService(new Intent(this, ForeBackground.class));
 
         loaddata();
         populatelist();
@@ -80,14 +78,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        if(!isMyServiceRunning(ForeBackground.class))
-            startService();
-    }
-
-    private void startService() {
-        Intent serviceIntent = new Intent(this, ForeBackground.class);
-        serviceIntent.putExtra("inputExtra", "Foreground Service Desccription Android");
-        ContextCompat.startForegroundService(this, serviceIntent);
     }
 
     private void populatelist() {
@@ -145,4 +135,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    protected void onDestroy() {
+        Log.i("log close app","close app");
+        startService(new Intent(this, ForeBackground.class));
+        super.onDestroy();
+    }
 }

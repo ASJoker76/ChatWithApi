@@ -1,9 +1,8 @@
 package chat.with.api.connection;
 
-import static chat.with.api.connection.ForeBackground.NOTIFICATION_REPLY;
 import static chat.with.api.utils.AESEncyption.decrypt;
 
-import android.app.Application;
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -19,9 +18,9 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.app.RemoteInput;
@@ -39,33 +38,34 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import chat.with.api.ChatActivity;
-import chat.with.api.MainActivity;
 import chat.with.api.R;
 
-public class CPusher extends Application {
+public class IntentServiceBackground extends IntentService {
 
-    public static final String TAG = CPusher.class.getSimpleName();
-    private static CPusher mInstance;
-
-    private NotificationManager mNotificationManager;
-    private NotificationCompat.Builder mBuilder;
-    //there can be multiple notifications so it can be used as notification identity
+    private final static String TAG = "chat.with.api.connection";
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
     private Vibrator vibrator;
+    public static final String NOTIFICATION_REPLY = "NotificationReply";
     String dec;
+    private Pusher pusher;
+
+    public IntentServiceBackground() {
+        super("IntentServiceBackground");
+    }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        mInstance = this;
+    protected void onHandleIntent(@Nullable Intent intent) {
+        pusher();
+    }
 
+    public void pusher(){
         try {
             PusherOptions options = new PusherOptions();
             options.setCluster(getString(R.string.cluster));
 
             //Pusher pusher = new Pusher(getString(R.string.key), options);
-            Pusher pusher = new Pusher("1503f658e5c89d8da00e", options);
+            pusher = new Pusher("1503f658e5c89d8da00e", options);
 
             pusher.connect(new ConnectionEventListener() {
                 @Override
@@ -94,6 +94,7 @@ public class CPusher extends Application {
 //                showNotification();
                     //NOTIFICATION
                     String data = event.getData();
+                    String waktu_dapet="";
                     String nama_pengirim="";
                     String nama_penerima="";
                     String pesan="";
@@ -126,14 +127,14 @@ public class CPusher extends Application {
                         remoteExpandedViews.setTextViewText(R.id.txt_judul, nama_pengirim);
                         remoteExpandedViews.setTextViewText(R.id.txt_isi_pesan, dec);
                         //start this(MainActivity) on by Tapping notification
-                        Intent mainIntent = new Intent(CPusher.this, ChatActivity.class);
+                        Intent mainIntent = new Intent(IntentServiceBackground.this, ChatActivity.class);
                         mainIntent.putExtra("username_penerima", nama_pengirim);
                         mainIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        PendingIntent mainPIntent = PendingIntent.getActivity(CPusher.this, 0,
+                        PendingIntent mainPIntent = PendingIntent.getActivity(IntentServiceBackground.this, 0,
                                 mainIntent, PendingIntent.FLAG_ONE_SHOT);
 
                         //creating notification
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(CPusher.this, CHANNEL_ID);
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(IntentServiceBackground.this, CHANNEL_ID);
                         //icon
                         builder.setSmallIcon(R.mipmap.ic_launcher);
                         //set priority
@@ -151,7 +152,7 @@ public class CPusher extends Application {
 
                         /* Set Light */
                         builder.setLights(Color.RED, 500,500);
-                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(CPusher.this);
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(IntentServiceBackground.this);
                         notificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
 
                         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
@@ -186,9 +187,10 @@ public class CPusher extends Application {
             });
         }
         catch (Exception e){
-            Log.e("Error", e.toString());
+
         }
     }
+
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){

@@ -60,6 +60,7 @@ public class ForeBackground extends Service {
     private Vibrator vibrator;
     public static final String NOTIFICATION_REPLY = "NotificationReply";
     String dec;
+    private Pusher pusher;
 
     @Nullable
     @Override
@@ -69,36 +70,14 @@ public class ForeBackground extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String input = intent.getStringExtra("inputExtra");
-        createNotificationChannel();
-        Handler handler = new Handler(Looper.getMainLooper());
-
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(() -> {
-                    pusher();
-                });
-            }
-        };
-        Timer mTimer = new Timer();
-        mTimer.schedule(timerTask, 0,60*60*1000);
+        pusher();
         return START_STICKY;
     }
 
     @Override
-    public void onCreate() {
-        Toast.makeText(this, "Service Created", Toast.LENGTH_LONG).show();
-        //pusher();
-    }
-    @Override
-    public void onStart(Intent intent, int startid) {
-        Toast.makeText(this, "Service Started", Toast.LENGTH_LONG).show();
-
-    }
-    @Override
     public void onDestroy() {
-        Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
+        pusher();
     }
 
     public void pusher(){
@@ -107,7 +86,7 @@ public class ForeBackground extends Service {
             options.setCluster(getString(R.string.cluster));
 
             //Pusher pusher = new Pusher(getString(R.string.key), options);
-            Pusher pusher = new Pusher("1503f658e5c89d8da00e", options);
+            pusher = new Pusher("1503f658e5c89d8da00e", options);
 
             pusher.connect(new ConnectionEventListener() {
                 @Override
@@ -136,6 +115,7 @@ public class ForeBackground extends Service {
 //                showNotification();
                     //NOTIFICATION
                     String data = event.getData();
+                    String waktu_dapet="";
                     String nama_pengirim="";
                     String nama_penerima="";
                     String pesan="";
@@ -157,7 +137,7 @@ public class ForeBackground extends Service {
                     String usr = prefs.getString("user","");
 
                     if(nama_penerima.equals(usr)){
-
+                        createNotificationChannel();
                         //inflating the views (custom_normal.xml and custom_expanded.xml)
                         RemoteViews remoteCollapsedViews = new RemoteViews(getPackageName(), R.layout.custom_normal);
                         RemoteViews remoteExpandedViews = new RemoteViews(getPackageName(), R.layout.custom_expanded);
