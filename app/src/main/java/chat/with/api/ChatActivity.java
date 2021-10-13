@@ -95,6 +95,7 @@ public class ChatActivity extends AppCompatActivity {
     public static final String NOTIFICATION_REPLY = "NotificationReply";
     String dec;
     private Pusher pusher;
+    int refresh = 0;
 
 
     @Override
@@ -161,81 +162,95 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void onloadChatnew() {
-        Handler handler = new Handler(Looper.getMainLooper());
+        Log.i("kalo masuk","log timer");
+        try {
+            PusherOptions options = new PusherOptions();
+            options.setCluster(getString(R.string.cluster));
+
+            //Pusher pusher = new Pusher(getString(R.string.key), options);
+            pusher = new Pusher("1503f658e5c89d8da00e", options);
+
+            pusher.connect(new ConnectionEventListener() {
+                @Override
+                public void onConnectionStateChange(ConnectionStateChange change) {
+                    Log.i("Pusher", "State changed from " + change.getPreviousState() +
+                            " to " + change.getCurrentState());
+                }
+
+                @Override
+                public void onError(String message, String code, Exception e) {
+                    Log.i("Pusher", "There was a problem connecting! " +
+                            "\ncode: " + code +
+                            "\nmessage: " + message +
+                            "\nException: " + e
+                    );
+                }
+            }, ConnectionState.ALL);
+
+            Channel channel = pusher.subscribe("my-channel");
+
+            channel.bind("Chat With Api", new SubscriptionEventListener() {
+                @Override
+                public void onEvent(PusherEvent event) {
+                    Log.i("Pusher", "Received event with data: " + event.toString());
+
+//                showNotification();
+                    //NOTIFICATION
+                    String data = event.getData();
+                    String waktu_dapet="";
+                    String nama_pengirim="";
+                    String nama_penerima="";
+                    String pesan="";
+                    try {
+                        JSONObject jsonObject = new JSONObject(data);
+                        waktu_dapet = jsonObject.getString("waktu_dapet");
+                        nama_penerima= jsonObject.getString("nama_penerima");
+                        nama_pengirim= jsonObject.getString("nama_pengirim");
+                        pesan= jsonObject.getString("pesan");
+                        try {
+                            dec = decrypt(pesan);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        SharedPreferences prefs = getBaseContext().getSharedPreferences("login", Context.MODE_PRIVATE);
+                        String usr = prefs.getString("user","");
+                        if(nama_penerima.equals(usr)){
+                            setChat(messagesWindow,dec,waktu_dapet);
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        catch (Exception e){
+
+        }
+        /* Refresh Display Text Chat */
+        refresh(100);
+
+        /*Handler handler = new Handler(Looper.getMainLooper());
 
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
                 handler.post(() -> {
-                    Log.i("kalo masuk","log timer");
-                    try {
-                        PusherOptions options = new PusherOptions();
-                        options.setCluster(getString(R.string.cluster));
 
-                        //Pusher pusher = new Pusher(getString(R.string.key), options);
-                        pusher = new Pusher("1503f658e5c89d8da00e", options);
-
-                        pusher.connect(new ConnectionEventListener() {
-                            @Override
-                            public void onConnectionStateChange(ConnectionStateChange change) {
-                                Log.i("Pusher", "State changed from " + change.getPreviousState() +
-                                        " to " + change.getCurrentState());
-                            }
-
-                            @Override
-                            public void onError(String message, String code, Exception e) {
-                                Log.i("Pusher", "There was a problem connecting! " +
-                                        "\ncode: " + code +
-                                        "\nmessage: " + message +
-                                        "\nException: " + e
-                                );
-                            }
-                        }, ConnectionState.ALL);
-
-                        Channel channel = pusher.subscribe("my-channel");
-
-                        channel.bind("Chat With Api", new SubscriptionEventListener() {
-                            @Override
-                            public void onEvent(PusherEvent event) {
-                                Log.i("Pusher", "Received event with data: " + event.toString());
-
-//                showNotification();
-                                //NOTIFICATION
-                                String data = event.getData();
-                                String waktu_dapet="";
-                                String nama_pengirim="";
-                                String nama_penerima="";
-                                String pesan="";
-                                try {
-                                    JSONObject jsonObject = new JSONObject(data);
-                                    waktu_dapet = jsonObject.getString("waktu_dapet");
-                                    nama_penerima= jsonObject.getString("nama_penerima");
-                                    nama_pengirim= jsonObject.getString("nama_pengirim");
-                                    pesan= jsonObject.getString("pesan");
-                                    try {
-                                        dec = decrypt(pesan);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                    SharedPreferences prefs = getBaseContext().getSharedPreferences("login", Context.MODE_PRIVATE);
-                                    String usr = prefs.getString("user","");
-                                    if(nama_penerima.equals(usr)){
-                                        setChat(messagesWindow,dec,waktu_dapet);
-                                    }
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                    }
-                    catch (Exception e){
-
-                    }
                 });
             }
         };
         Timer mTimer = new Timer();
-        mTimer.schedule(timerTask, 0,10*10*1000);
+        mTimer.schedule(timerTask, 0,10*10*1000);*/
+    }
+
+    private void refresh(int milisecond){
+        final Handler handler = new Handler();
+        final Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                onloadChatnew();
+            }
+        };
     }
 
     private void cekroom(String username_pengirim, String username_penerima) {
