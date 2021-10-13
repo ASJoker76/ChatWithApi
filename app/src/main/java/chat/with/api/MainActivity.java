@@ -1,9 +1,13 @@
 package chat.with.api;
 
+import static android.app.Service.START_NOT_STICKY;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -24,6 +28,7 @@ import java.util.List;
 
 import chat.with.api.adapter.KontakDataAdapter;
 import chat.with.api.connection.API;
+import chat.with.api.connection.ForeBackground;
 import chat.with.api.model.res.ResDetailChat;
 import chat.with.api.model.res.ResUser;
 import chat.with.api.model.res.ResUserDetail;
@@ -51,7 +56,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
 //        MobileAds.initialize(this);
 //
 //        mAdView = findViewById(R.id.adView);
@@ -75,6 +79,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        if(!isMyServiceRunning(ForeBackground.class))
+            startService();
+    }
+
+    private void startService() {
+        Intent serviceIntent = new Intent(this, ForeBackground.class);
+        serviceIntent.putExtra("inputExtra", "Foreground Service Desccription Android");
+        ContextCompat.startForegroundService(this, serviceIntent);
     }
 
     private void populatelist() {
@@ -120,4 +133,16 @@ public class MainActivity extends AppCompatActivity {
         rv_list_kontak.setLayoutManager(new GridLayoutManager(MainActivity.this, numberOfColumns,GridLayoutManager.VERTICAL, false));
         rv_list_kontak.addItemDecoration(new GridSpacingItemDecoration(2, 2,true,2));
     }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }
