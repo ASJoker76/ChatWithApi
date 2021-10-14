@@ -50,10 +50,10 @@ import chat.with.api.R;
 
 public class ForeBackground extends Service {
 
-    public static final String TAG = CPusher.class.getSimpleName();
-    private static CPusher mInstance;
-    private NotificationManager mNotificationManager;
-    private NotificationCompat.Builder mBuilder;
+    Timer timer;
+    TimerTask timerTask;
+    String TAG = "Timers";
+    int Your_X_SECS = 5;
     //there can be multiple notifications so it can be used as notification identity
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
@@ -70,14 +70,60 @@ public class ForeBackground extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        pusher();
+        Log.e(TAG, "onStartCommand");
+        super.onStartCommand(intent, flags, startId);
+        createNotificationChannel();
+        startTimer();
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        //Toast.makeText(this, "Service Stopped", Toast.LENGTH_LONG).show();
-        pusher();
+        Log.e(TAG, "onDestroy");
+        stoptimertask();
+        super.onDestroy();
+    }
+
+    //we are going to use a handler to be able to run in our TimerTask
+    final Handler handler = new Handler();
+
+
+    public void startTimer() {
+        //set a new Timer
+        timer = new Timer();
+
+        //initialize the TimerTask's job
+        initializeTimerTask();
+
+        //schedule the timer, after the first 5000ms the TimerTask will run every 10000ms
+        timer.schedule(timerTask, 5000, Your_X_SECS * 1000); //
+        //timer.schedule(timerTask, 5000,1000); //
+    }
+
+    public void stoptimertask() {
+        //stop the timer, if it's not already null
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+    }
+
+    public void initializeTimerTask() {
+
+        timerTask = new TimerTask() {
+            public void run() {
+
+                //use a handler to run a toast that shows the current timestamp
+                handler.post(new Runnable() {
+                    public void run() {
+
+                        //TODO CALL NOTIFICATION FUNC
+                        pusher();
+
+                    }
+                });
+            }
+        };
     }
 
     public void pusher(){
@@ -186,15 +232,15 @@ public class ForeBackground extends Service {
                         builder.setSound(alarmSound);
                         builder.setDefaults(Notification.DEFAULT_SOUND);
 
-                        RemoteInput remoteInput = new RemoteInput.Builder(NOTIFICATION_REPLY)
-                                .setLabel("Please enter your name")
-                                .build();
-
-                        NotificationCompat.Action action =
-                                new NotificationCompat.Action.Builder(android.R.drawable.ic_delete,
-                                        "Reply Now...", mainPIntent)
-                                        .addRemoteInput(remoteInput)
-                                        .build();
+//                        RemoteInput remoteInput = new RemoteInput.Builder(NOTIFICATION_REPLY)
+//                                .setLabel("Please enter your name")
+//                                .build();
+//
+//                        NotificationCompat.Action action =
+//                                new NotificationCompat.Action.Builder(android.R.drawable.ic_delete,
+//                                        "Reply Now...", mainPIntent)
+//                                        .addRemoteInput(remoteInput)
+//                                        .build();
 
                         //init Android Vibrator API
                         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -203,6 +249,13 @@ public class ForeBackground extends Service {
                         } else {
                             vibrator.vibrate(1000);
                         }
+
+                        final Notification notification = builder.build();
+                        // notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
+                        // notification.flags |= Notification.FLAG_NO_CLEAR;
+                        // notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+                        startForeground(NOTIFICATION_ID, notification);
                     }
                 }
             });

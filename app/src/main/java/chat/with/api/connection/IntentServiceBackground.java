@@ -7,6 +7,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.IBinder;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
@@ -38,11 +40,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import chat.with.api.ChatActivity;
+import chat.with.api.MainActivity;
 import chat.with.api.R;
 
-public class IntentServiceBackground extends IntentService {
+public class IntentServiceBackground extends Service {
 
-    private final static String TAG = "chat.with.api.connection";
+
     private static final String CHANNEL_ID = "channel_id01";
     public static final int NOTIFICATION_ID = 1;
     private Vibrator vibrator;
@@ -50,13 +53,42 @@ public class IntentServiceBackground extends IntentService {
     String dec;
     private Pusher pusher;
 
-    public IntentServiceBackground() {
-        super("IntentServiceBackground");
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        createNotificationChannel();
+
+        //inflating the views (custom_normal.xml and custom_expanded.xml)
+        RemoteViews remoteCollapsedViews = new RemoteViews(getPackageName(), R.layout.custom_header);
+
+        //creating notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID);
+        //icon
+        builder.setSmallIcon(R.drawable.chat);
+        //set priority
+        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
+        //dismiss on tap
+        builder.setAutoCancel(true);
+        //start intent on notification tap (MainActivity)
+        //custom style
+        builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
+        builder.setCustomContentView(remoteCollapsedViews);
+
+        //notification manager
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
+        notificationManagerCompat.notify(NOTIFICATION_ID, builder.build());
+        final Notification notification = builder.build();
+        // notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
+        // notification.flags |= Notification.FLAG_NO_CLEAR;
+        // notification.flags |= Notification.FLAG_ONGOING_EVENT;
+
+        startForeground(NOTIFICATION_ID, notification);
+        return START_STICKY;
     }
 
+    @Nullable
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        pusher();
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     public void pusher(){

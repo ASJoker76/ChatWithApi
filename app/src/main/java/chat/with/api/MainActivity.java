@@ -3,11 +3,13 @@ package chat.with.api;
 import static android.app.Service.START_NOT_STICKY;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -48,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
     TextView txt_username_pengirim;
     String username_pengirim;
     MaterialButton btn_logout;
-
+    private static final String CHANNEL_ID = "channel_id01";
+    public static final int NOTIFICATION_ID = 1;
     private static final String TAG = "MainActivity";
 
 //    private AdView mAdView;
@@ -78,6 +81,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        munculnotif();
+    }
+
+    private void munculnotif() {
+        startService(new Intent(this, IntentServiceBackground.class));
     }
 
     private void populatelist() {
